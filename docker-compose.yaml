@@ -11,8 +11,13 @@ services:
     volumes:
       - ./:/app
     ports:
-      - 1488:8890
+      - ${APP_PORT:-8890}:8890
     environment:
       - MLFLOW_TRACKING_URI=http://158.160.2.37:5000/
       - DEFAULT_RUN_ID=${DEFAULT_RUN_ID}
+      - EVIDENTLY_URL=${EVIDENTLY_URL:-http://158.160.2.37:8000/}
+      - EVIDENTLY_PROJECT_ID=${EVIDENTLY_PROJECT_ID:-019d061f-cc08-7b5e-b932-d792a1f258e2}
+      - EVIDENTLY_BATCH_SIZE=${EVIDENTLY_BATCH_SIZE:-100}
+      - EVIDENTLY_REPORT_INTERVAL_SECONDS=${EVIDENTLY_REPORT_INTERVAL_SECONDS:-300}
+      - EVIDENTLY_ENABLED=${EVIDENTLY_ENABLED:-true}
     command: uvicorn main:app --host 0.0.0.0 --port 8890
