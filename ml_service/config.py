@@ -2,7 +2,7 @@ import os
 
 MODEL_ARTIFACT_PATH = 'model'
 DEFAULT_EVIDENTLY_URL = 'http://158.160.2.37:8000/'
-DEFAULT_EVIDENTLY_PROJECT_ID = '019d061f-cc08-7b5e-b932-d792a1f258e2'
+DEFAULT_EVIDENTLY_PROJECT_ID = '019d3a33-9c54-7f59-be64-59e8fc864a1c'
 DEFAULT_APP_PORT = 8890
 
 
@@ -59,8 +59,16 @@ def evidently_project_id() -> str | None:
 
 
 def evidently_batch_size() -> int:
-    return _get_int('EVIDENTLY_BATCH_SIZE', 100)
+    return _get_int('EVIDENTLY_BATCH_SIZE', 20)
 
 
 def evidently_report_interval_seconds() -> int:
-    return _get_int('EVIDENTLY_REPORT_INTERVAL_SECONDS', 300)
+    return _get_int('EVIDENTLY_REPORT_INTERVAL_SECONDS', 30)
+
+
+def evidently_max_pending_events() -> int:
+    return _get_int('EVIDENTLY_MAX_PENDING_EVENTS', 2_000)
+
+
+def evidently_max_batches_per_interval() -> int:
+    return _get_int('EVIDENTLY_MAX_BATCHES_PER_INTERVAL', 10)

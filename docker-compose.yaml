@@ -1,12 +1,12 @@
-version: '3.9'
+name: ${COMPOSE_PROJECT_NAME:-student1_testing_and_monitoring}
 
 services:
   mlflow_example:
     build:
       context: ./
       dockerfile: ./Dockerfile
-    image: ml_service:$USER
-    container_name: ml_service_$USER
+    image: ml_service:${USER:-student1}
+    container_name: ml_service_${USER:-student1}
     working_dir: /app
     volumes:
       - ./:/app
@@ -16,8 +16,10 @@ services:
       - MLFLOW_TRACKING_URI=http://158.160.2.37:5000/
       - DEFAULT_RUN_ID=${DEFAULT_RUN_ID}
       - EVIDENTLY_URL=${EVIDENTLY_URL:-http://158.160.2.37:8000/}
-      - EVIDENTLY_PROJECT_ID=${EVIDENTLY_PROJECT_ID:-019d061f-cc08-7b5e-b932-d792a1f258e2}
-      - EVIDENTLY_BATCH_SIZE=${EVIDENTLY_BATCH_SIZE:-100}
-      - EVIDENTLY_REPORT_INTERVAL_SECONDS=${EVIDENTLY_REPORT_INTERVAL_SECONDS:-300}
+      - EVIDENTLY_PROJECT_ID=${EVIDENTLY_PROJECT_ID:-019d3a33-9c54-7f59-be64-59e8fc864a1c}
+      - EVIDENTLY_BATCH_SIZE=${EVIDENTLY_BATCH_SIZE:-20}
+      - EVIDENTLY_REPORT_INTERVAL_SECONDS=${EVIDENTLY_REPORT_INTERVAL_SECONDS:-30}
+      - EVIDENTLY_MAX_PENDING_EVENTS=${EVIDENTLY_MAX_PENDING_EVENTS:-2000}
+      - EVIDENTLY_MAX_BATCHES_PER_INTERVAL=${EVIDENTLY_MAX_BATCHES_PER_INTERVAL:-10}
       - EVIDENTLY_ENABLED=${EVIDENTLY_ENABLED:-true}
     command: uvicorn main:app --host 0.0.0.0 --port 8890

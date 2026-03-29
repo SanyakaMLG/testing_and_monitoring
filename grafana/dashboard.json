@@ -1,0 +1,1016 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "uid": "st6vvr2",
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "Количество запросов в секунду по всему сервису.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(rate(ml_service_http_requests_total{instance=~\"$instance\"}[$__rate_interval]))",
+          "legendFormat": "rps",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Request Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "Перцентили времени ответа /predict.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 0
+      },
+      "id": 2,
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.75, sum by (le) (rate(ml_service_http_request_duration_seconds_bucket{route=\"/predict\",instance=~\"$instance\"}[$__rate_interval])))",
+          "legendFormat": "p75",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.90, sum by (le) (rate(ml_service_http_request_duration_seconds_bucket{route=\"/predict\",instance=~\"$instance\"}[$__rate_interval])))",
+          "legendFormat": "p90",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(ml_service_http_request_duration_seconds_bucket{route=\"/predict\",instance=~\"$instance\"}[$__rate_interval])))",
+          "legendFormat": "p95",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(ml_service_http_request_duration_seconds_bucket{route=\"/predict\",instance=~\"$instance\"}[$__rate_interval])))",
+          "legendFormat": "p99",
+          "range": true,
+          "refId": "D"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.999, sum by (le) (rate(ml_service_http_request_duration_seconds_bucket{route=\"/predict\",instance=~\"$instance\"}[$__rate_interval])))",
+          "legendFormat": "p99.9",
+          "range": true,
+          "refId": "E"
+        }
+      ],
+      "title": "HTTP Latency Quantiles",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "Распределение запросов по HTTP-кодам ответа.",
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "displayMode": "basic",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": false
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (status_code) (increase(ml_service_http_requests_total{instance=~\"$instance\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "{{status_code}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "HTTP Status Codes",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "Текущая загрузка CPU процесса сервиса.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 4,
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "ml_service_process_cpu_percent{instance=~\"$instance\"}",
+          "legendFormat": "cpu",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "RSS-память процесса сервиса: сырой ряд, 10-минутное среднее и порог алерта. После burst-нагрузки Python может не сразу вернуть память ОС, поэтому alert опирается не на мгновенный пик, а на устойчиво высокий и растущий RSS.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 5,
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "ml_service_process_memory_bytes{instance=~\"$instance\"}",
+          "legendFormat": "rss",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "avg_over_time(ml_service_process_memory_bytes{instance=~\"$instance\"}[10m])",
+          "legendFormat": "avg_10m",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "editorMode": "code",
+          "expr": "ml_service_process_memory_bytes{instance=~\"$instance\"} * 0 + 1200000000",
+          "legendFormat": "alert_threshold",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Memory Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "Перцентили времени предобработки признаков.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 16
+      },
+      "id": 6,
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.75, sum by (le) (rate(ml_service_preprocessing_duration_seconds_bucket{instance=~\"$instance\"}[$__rate_interval])))",
+          "legendFormat": "p75",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.90, sum by (le) (rate(ml_service_preprocessing_duration_seconds_bucket{instance=~\"$instance\"}[$__rate_interval])))",
+          "legendFormat": "p90",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(ml_service_preprocessing_duration_seconds_bucket{instance=~\"$instance\"}[$__rate_interval])))",
+          "legendFormat": "p95",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(ml_service_preprocessing_duration_seconds_bucket{instance=~\"$instance\"}[$__rate_interval])))",
+          "legendFormat": "p99",
+          "range": true,
+          "refId": "D"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.999, sum by (le) (rate(ml_service_preprocessing_duration_seconds_bucket{instance=~\"$instance\"}[$__rate_interval])))",
+          "legendFormat": "p99.9",
+          "range": true,
+          "refId": "E"
+        }
+      ],
+      "title": "Preprocessing Latency Quantiles",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "Топ пропущенных входных полей за выбранный период.",
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 16
+      },
+      "id": 7,
+      "options": {
+        "displayMode": "basic",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": false
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "topk(10, sum by (feature) (increase(ml_service_input_missing_feature_total{instance=~\"$instance\"}[$__range])))",
+          "instant": true,
+          "legendFormat": "{{feature}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Missing Input Features",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "Самые частые категориальные значения за выбранный период.",
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 16
+      },
+      "id": 8,
+      "options": {
+        "displayMode": "basic",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": false
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "topk(10, sum by (feature, value) (increase(ml_service_input_categorical_feature_total{instance=~\"$instance\"}[$__range])))",
+          "instant": true,
+          "legendFormat": "{{feature}}={{value}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Top Categorical Values",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "Распределение выбранной числовой фичи по bucket-интервалам за выбранный период. Для целочисленных признаков отдельный bin для нуля показывает, сколько значений равно 0.",
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "id": 9,
+      "options": {
+        "displayMode": "basic",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"0.0\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "0",
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"1.0\"}[$__range])) - sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"0.0\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "1",
+          "range": false,
+          "refId": "B"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"5.0\"}[$__range])) - sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"1.0\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "2-5",
+          "range": false,
+          "refId": "C"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"10.0\"}[$__range])) - sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"5.0\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "6-10",
+          "range": false,
+          "refId": "D"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"20.0\"}[$__range])) - sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"10.0\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "11-20",
+          "range": false,
+          "refId": "E"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"40.0\"}[$__range])) - sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"20.0\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "21-40",
+          "range": false,
+          "refId": "F"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"60.0\"}[$__range])) - sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"40.0\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "41-60",
+          "range": false,
+          "refId": "G"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"80.0\"}[$__range])) - sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"60.0\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "61-80",
+          "range": false,
+          "refId": "H"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"100.0\"}[$__range])) - sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"80.0\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "81-100",
+          "range": false,
+          "refId": "I"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"1000.0\"}[$__range])) - sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"100.0\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "101-1k",
+          "range": false,
+          "refId": "J"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"10000.0\"}[$__range])) - sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"1000.0\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "1k-10k",
+          "range": false,
+          "refId": "K"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"100000.0\"}[$__range])) - sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"10000.0\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "10k-100k",
+          "range": false,
+          "refId": "L"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"1000000.0\"}[$__range])) - sum(increase(ml_service_input_numeric_feature_values_bucket{instance=~\"$instance\",feature=\"$numeric_feature\",le=\"100000.0\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "100k-1M",
+          "range": false,
+          "refId": "M"
+        }
+      ],
+      "title": "Numeric Feature Distribution",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "Перцентили времени инференса модели.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "id": 10,
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.75, sum by (le) (rate(ml_service_inference_duration_seconds_bucket{instance=~\"$instance\"}[$__rate_interval])))",
+          "legendFormat": "p75",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.90, sum by (le) (rate(ml_service_inference_duration_seconds_bucket{instance=~\"$instance\"}[$__rate_interval])))",
+          "legendFormat": "p90",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(ml_service_inference_duration_seconds_bucket{instance=~\"$instance\"}[$__rate_interval])))",
+          "legendFormat": "p95",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(ml_service_inference_duration_seconds_bucket{instance=~\"$instance\"}[$__rate_interval])))",
+          "legendFormat": "p99",
+          "range": true,
+          "refId": "D"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.999, sum by (le) (rate(ml_service_inference_duration_seconds_bucket{instance=~\"$instance\"}[$__rate_interval])))",
+          "legendFormat": "p99.9",
+          "range": true,
+          "refId": "E"
+        }
+      ],
+      "title": "Inference Latency Quantiles",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "Распределение классов предсказаний за выбранный интервал.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 32
+      },
+      "id": 11,
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (prediction) (increase(ml_service_prediction_total{instance=~\"$instance\"}[$__range]))",
+          "legendFormat": "{{prediction}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Prediction Classes",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "Распределение вероятностей модели по probability-bin за выбранный период.",
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 32
+      },
+      "id": 12,
+      "options": {
+        "displayMode": "basic",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.1\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "0.00-0.10",
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.2\"}[$__range])) - sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.1\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "0.10-0.20",
+          "range": false,
+          "refId": "B"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.3\"}[$__range])) - sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.2\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "0.20-0.30",
+          "range": false,
+          "refId": "C"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.4\"}[$__range])) - sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.3\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "0.30-0.40",
+          "range": false,
+          "refId": "D"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.5\"}[$__range])) - sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.4\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "0.40-0.50",
+          "range": false,
+          "refId": "E"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.6\"}[$__range])) - sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.5\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "0.50-0.60",
+          "range": false,
+          "refId": "F"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.7\"}[$__range])) - sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.6\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "0.60-0.70",
+          "range": false,
+          "refId": "G"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.8\"}[$__range])) - sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.7\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "0.70-0.80",
+          "range": false,
+          "refId": "H"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.9\"}[$__range])) - sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.8\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "0.80-0.90",
+          "range": false,
+          "refId": "I"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"1.0\"}[$__range])) - sum(increase(ml_service_prediction_probability_bucket{instance=~\"$instance\",le=\"0.9\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "0.90-1.00",
+          "range": false,
+          "refId": "J"
+        }
+      ],
+      "title": "Probability Distribution",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "Текущий run_id и тип модели.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 32
+      },
+      "id": 13,
+      "options": {
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "ml_service_current_model_info{instance=~\"$instance\"}",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Current Model Info",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true,
+              "__name__": true,
+              "instance": true,
+              "job": true
+            },
+            "renameByName": {
+              "run_id": "Run ID",
+              "model_type": "Model Type"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "Фичи, которые ожидает активная модель.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 40
+      },
+      "id": 14,
+      "options": {
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "ml_service_current_model_feature{instance=~\"$instance\"}",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Current Model Features",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true,
+              "__name__": true,
+              "instance": true,
+              "job": true
+            },
+            "renameByName": {
+              "run_id": "Run ID",
+              "feature": "Feature"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "Число событий обновления модели по статусам за выбранный период.",
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 40
+      },
+      "id": 15,
+      "options": {
+        "displayMode": "basic",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": false
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (status) (increase(ml_service_model_update_total{instance=~\"$instance\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "{{status}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Model Updates",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "Сколько событий сейчас ждут следующего Evidently batch.",
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 40
+      },
+      "id": 16,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "ml_service_evidently_pending_events{instance=~\"$instance\"}",
+          "legendFormat": "pending",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Pending Drift Events",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efgd6w85w88aoe"
+      },
+      "description": "Сколько Evidently-отчётов было отправлено по статусам за выбранный период.",
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 48
+      },
+      "id": 17,
+      "options": {
+        "displayMode": "basic",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": false
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (status) (increase(ml_service_evidently_report_total{instance=~\"$instance\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "{{status}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Evidently Reports",
+      "type": "bargauge"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [
+    "ml",
+    "fastapi",
+    "monitoring"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "instance",
+        "label": "Instance",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "efgd6w85w88aoe"
+        },
+        "definition": "label_values(up{job=\"students\"}, instance)",
+        "query": {
+          "query": "label_values(up{job=\"students\"}, instance)",
+          "refId": "Prometheus-instance-Variable-Query"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "selected": true,
+          "text": "158.160.71.215:8890",
+          "value": "158.160.71.215:8890"
+        }
+      },
+      {
+        "name": "numeric_feature",
+        "label": "Numeric Feature",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "efgd6w85w88aoe"
+        },
+        "definition": "label_values(ml_service_input_numeric_feature_values_count{instance=~\"$instance\"}, feature)",
+        "query": {
+          "query": "label_values(ml_service_input_numeric_feature_values_count{instance=~\"$instance\"}, feature)",
+          "refId": "Prometheus-numeric-feature-Variable-Query"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "selected": true,
+          "text": "age",
+          "value": "age"
+        }
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "ML Service Monitoring",
+  "version": 1
+}

@@ -28,6 +28,23 @@ def test_model_set_is_atomic_when_next_load_fails(monkeypatch):
     assert model.get() == initial_state
 
 
+def test_model_set_skips_reloading_same_run_id(monkeypatch):
+    calls: list[str] = []
+
+    def fake_load_model(*, model_uri=None, run_id=None):
+        calls.append(run_id)
+        return DummyPipeline(features=['age'], probability=0.8)
+
+    monkeypatch.setattr('ml_service.model.load_model', fake_load_model)
+    model = Model()
+
+    first_state = model.set('a' * 32)
+    second_state = model.set('a' * 32)
+
+    assert first_state == second_state
+    assert calls == ['a' * 32]
+
+
 def test_model_predict_returns_probability_and_class():
     model = Model()
     model.data = model.data.__class__(

@@ -11,6 +11,7 @@ from ml_service.exceptions import (
     ModelLoadError,
     ModelNotReadyError,
 )
+from ml_service.memory import release_process_memory
 from ml_service.mlflow_utils import load_model
 
 
@@ -28,10 +29,6 @@ class ModelData:
 
 
 class Model:
-    """
-    Thread-safe container for the currently active model.
-    """
-
     def __init__(self) -> None:
         self.lock = threading.RLock()
         self.data = ModelData(model=None, run_id=None)
@@ -41,6 +38,10 @@ class Model:
             return self.data
 
     def set(self, run_id: str) -> ModelData:
+        with self.lock:
+            if self.data.run_id == run_id and self.data.is_loaded:
+                return self.data
+
         try:
             model = load_model(run_id=run_id)
         except Exception as exc:
@@ -49,6 +50,7 @@ class Model:
         features = self._extract_features(model)
         model_type = self._extract_model_type(model)
         with self.lock:
+            previous_model = self.data.model
             self.data = ModelData(
                 model=model,
                 run_id=run_id,
@@ -56,6 +58,9 @@ class Model:
                 model_type=model_type,
                 updated_at=datetime.now(timezone.utc),
             )
+            if previous_model is not None:
+                del previous_model
+            release_process_memory()
             return self.data
 
     def predict(self, dataframe: Any) -> tuple[float, int]:
